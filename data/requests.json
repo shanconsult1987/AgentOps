@@ -1,0 +1,52 @@
+[
+  {
+    "id": 4,
+    "message": "I cannot access the finance application",
+    "category": "access",
+    "priority": "high",
+    "summary": "Request classified as access with high priority.",
+    "plan": [
+      "Validate the access request.",
+      "Check required business justification.",
+      "Prepare an access recommendation.",
+      "Request human approval."
+    ],
+    "action": "Recommend an access change.",
+    "review_decision": "APPROVAL_REQUIRED",
+    "review_risks": [
+      "High-priority request.",
+      "Consequential action."
+    ],
+    "status": "EXECUTED",
+    "execution_message": "Access recommendation recorded.",
+    "created": "2026-09-24T12:01:26"
+  },
+  {
+    "id": 3,
+    "message": "My invoice is wrong",
+    "category": "billing",
+    "priority": "medium",
+    "summary": "Request classified as billing with medium priority.",
+    "status": "ANALYZED",
+    "created": "2026-09-24T11:32:08"
+  },
+  {
+    "id": 2,
+    "message": "The application is down",
+    "category": "incident",
+    "priority": "high",
+    "summary": "Request classified as incident with high priority.",
+    "status": "ANALYZED",
+    "created": "2026-09-24T11:31:41"
+  },
+  {
+    "id": 1,
+    "message": "I cannot access finance",
+    "category": "access",
+    "priority": "high",
+    "summary": "Request classified as access with high priority.",
+    "status": "ANALYZED",
+    "created": "2026-09-24T11:31:17",
+    "execution_message": "Execution blocked."
+  }
+]
