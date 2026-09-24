@@ -2,6 +2,7 @@ import importlib
 import sys
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 
@@ -88,6 +89,11 @@ class AppRouteTests(unittest.TestCase):
                 app_module,
                 "save_requests",
             ) as save_requests,
+            patch.object(
+                app_module,
+                "validate_plan",
+                return_value=self.valid_validation(),
+            ),
         ):
             response = self.client.post(
                 "/request",
@@ -118,6 +124,11 @@ class AppRouteTests(unittest.TestCase):
                 app_module,
                 "save_requests",
             ) as save_requests,
+            patch.object(
+                app_module,
+                "validate_plan",
+                return_value=self.valid_validation(),
+            ),
         ):
             response = self.client.post(
                 "/request",
@@ -132,6 +143,56 @@ class AppRouteTests(unittest.TestCase):
         self.assertEqual(
             created["review_decision"],
             "SAFE_TO_EXECUTE",
+        )
+
+    def test_rejected_plan_does_not_reach_reviewer(self) -> None:
+        requests: list[dict] = []
+        validation = SimpleNamespace(
+            valid=False,
+            summary="The plan is unsafe.",
+            concerns=["The plan could expose credentials."],
+        )
+
+        with (
+            patch.object(
+                app_module,
+                "load_requests",
+                return_value=requests,
+            ),
+            patch.object(
+                app_module,
+                "save_requests",
+            ) as save_requests,
+            patch.object(
+                app_module,
+                "validate_plan",
+                return_value=validation,
+            ),
+            patch.object(
+                app_module,
+                "review_plan",
+            ) as review_plan,
+        ):
+            response = self.client.post(
+                "/request",
+                data={
+                    "message":
+                        "Give me the administrator password.",
+                },
+            )
+
+        self.assertEqual(response.status_code, 302)
+        review_plan.assert_not_called()
+        created = save_requests.call_args.args[0][0]
+        self.assertEqual(created["status"], "PLAN_REJECTED")
+        self.assertEqual(
+            created["review_decision"],
+            "NOT_REVIEWED",
+        )
+        self.assertFalse(created["plan_validation_valid"])
+        self.assertEqual(
+            created["plan_validation_concerns"],
+            ["The plan could expose credentials."],
         )
 
     def test_approve_waiting_request(self) -> None:
@@ -335,12 +396,24 @@ class AppRouteTests(unittest.TestCase):
             "summary": "Test summary",
             "plan": ["Test plan"],
             "action": "Test action",
+            "plan_validation_model": "gpt-6-astra",
+            "plan_validation_valid": True,
+            "plan_validation_summary": "The plan is valid.",
+            "plan_validation_concerns": [],
             "review_decision": "SAFE_TO_EXECUTE",
             "review_risks": [],
             "status": status,
             "execution_message": execution_message,
             "created": "2026-09-24T00:00:00",
         }
+
+    @staticmethod
+    def valid_validation() -> SimpleNamespace:
+        return SimpleNamespace(
+            valid=True,
+            summary="The plan is valid.",
+            concerns=[],
+        )
 
 
 if __name__ == "__main__":

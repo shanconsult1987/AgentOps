@@ -8,7 +8,11 @@ from flask import (
     url_for,
 )
 
-from agent import analyze_request
+from agent import (
+    analyze_request,
+    validate_plan,
+)
+from openai_client import get_openai_model
 from reviewer import review_plan
 from state import load_requests, save_requests
 from tools import execute_action
@@ -222,6 +226,29 @@ Request #{{ item.id }}
 </p>
 
 
+<h4>LLM Plan Validation</h4>
+
+<p>
+{{ item.plan_validation_summary }}
+</p>
+
+{% if item.plan_validation_concerns %}
+
+<ul>
+
+{% for concern in item.plan_validation_concerns %}
+
+<li>
+{{ concern }}
+</li>
+
+{% endfor %}
+
+</ul>
+
+{% endif %}
+
+
 <h4>Reviewer</h4>
 
 <p>
@@ -362,18 +389,30 @@ def create_request():
         message
     )
 
-    review = review_plan(
-        result.category,
-        result.priority,
-        result.action,
+    validation = validate_plan(
+        message,
+        result,
     )
 
-    status = (
-        "AWAITING_APPROVAL"
-        if review["decision"]
-        == "APPROVAL_REQUIRED"
-        else "READY"
-    )
+    if validation.valid:
+        review = review_plan(
+            result.category,
+            result.priority,
+            result.action,
+        )
+
+        status = (
+            "AWAITING_APPROVAL"
+            if review["decision"]
+            == "APPROVAL_REQUIRED"
+            else "READY"
+        )
+    else:
+        review = {
+            "decision": "NOT_REVIEWED",
+            "risks": validation.concerns,
+        }
+        status = "PLAN_REJECTED"
 
     record = {
 
@@ -395,6 +434,18 @@ def create_request():
 
         "action":
             result.action,
+
+        "plan_validation_model":
+            get_openai_model(),
+
+        "plan_validation_valid":
+            validation.valid,
+
+        "plan_validation_summary":
+            validation.summary,
+
+        "plan_validation_concerns":
+            validation.concerns,
 
         "review_decision":
             review["decision"],

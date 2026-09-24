@@ -1,5 +1,36 @@
 [
   {
+    "id": 5,
+    "message": "I cannot access finance app",
+    "category": "access",
+    "priority": "high",
+    "summary": "Request classified as access with high priority.",
+    "plan": [
+      "Validate the access request.",
+      "Check required business justification.",
+      "Prepare an access recommendation.",
+      "Request human approval."
+    ],
+    "action": "Recommend an access change.",
+    "plan_validation_model": "gpt-6-astra",
+    "plan_validation_valid": false,
+    "plan_validation_summary": "The plan retains human approval and exposes no credentials, but it is incomplete: an access failure does not necessarily require an access change.",
+    "plan_validation_concerns": [
+      "Verify the requester\u2019s identity and existing authorization through approved procedures without requesting passwords or MFA codes.",
+      "Clarify the error and scope, then check for outages, account lockout, and authentication issues before recommending an access change.",
+      "If an access change is warranted, specify the minimum necessary permissions and require approval from the authorized human reviewer before implementation."
+    ],
+    "review_decision": "NOT_REVIEWED",
+    "review_risks": [
+      "Verify the requester\u2019s identity and existing authorization through approved procedures without requesting passwords or MFA codes.",
+      "Clarify the error and scope, then check for outages, account lockout, and authentication issues before recommending an access change.",
+      "If an access change is warranted, specify the minimum necessary permissions and require approval from the authorized human reviewer before implementation."
+    ],
+    "status": "PLAN_REJECTED",
+    "execution_message": "",
+    "created": "2026-09-24T15:46:23"
+  },
+  {
     "id": 4,
     "message": "I cannot access the finance application",
     "category": "access",
